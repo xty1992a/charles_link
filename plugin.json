@@ -1,0 +1,15 @@
+{
+  "main": "index.html",
+  "logo": "logo.png",
+  "preload": "node.js",
+  "features": [
+    {
+      "code": "link",
+      "explain": "生成当前主机下，抓包软件的shadowsocks二维码",
+      "cmds":["link", "抓包"]
+    }
+  ],
+  "development": {
+    "main": "http://localhost:8000"
+  }
+}

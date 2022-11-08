@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>抓包助手</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+  <link
+          rel="stylesheet"
+          href="https://fastly.jsdelivr.net/npm/vant@3/lib/index.css"
+  />
+  <script type="text/javascript" src="./lib/base64.js"></script>
+  <script type="text/javascript" src="./lib/qrcode.js"></script>
+  <!-- 引入 Vue 和 Vant 的 JS 文件 -->
+  <script src="https://fastly.jsdelivr.net/npm/vue@3"></script>
+  <script src="https://fastly.jsdelivr.net/npm/jr-qrcode"></script>
+  <script src="https://fastly.jsdelivr.net/npm/vant@3/lib/vant.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .app {
+      background-color: #f9f9f9;
+      padding: 10px;
+      min-height: 100vh;
+    }
+
+    .block {
+      padding: 10px;
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .van-button{
+      margin: 10px auto;
+      width: 200px;
+      height: 40px;
+    }
+
+    .qrcode{
+      padding: 20px;
+      text-align: center;
+    }
+
+  </style>
+
+  <script type="text/javascript">
+	function scope() {
+	  function base64(text) {
+		return removePadding(Base64.encode(text));
+	  }
+
+	  function removePadding(text) {
+		if (text.endsWith('==')) {
+		  return text.slice(0, -2);
+		}
+		if (text.endsWith('=')) {
+		  return text.slice(0, -1);
+		}
+		return text;
+	  }
+
+	  return {
+		base64,
+	  };
+	}
+
+	window.helper = scope();
+  </script>
+
+</head>
+
+<body>
+<div id="app"></div>
+<template id="tpl">
+  <div class="app">
+    <div class="block">
+      <van-form @submit="onSubmit">
+        <van-field
+                v-model="ip"
+                name="ip"
+                label="ip"
+                placeholder="ip"
+                :rules="[{ required: true, message: '请填写ip' }]"></van-field>
+        <van-field
+                v-model="port"
+                name="port"
+                label="端口"
+                placeholder="port"
+                :rules="[{ required: true, message: '请填写端口' }]"></van-field>
+        <van-button round block type="primary" native-type="submit">
+          生成
+        </van-button>
+
+        <div class="qrcode" :title="link" v-if="url">
+          <p>打开小火箭🚀或其他梯子扫码使用即可</p>
+          <img :src="url" alt="qrcode">
+        </div>
+      </van-form>
+    </div>
+  </div>
+</template>
+
+<script type="text/javascript">
+
+  const {createApp, ref} = Vue;
+  const {Toast: toast} = vant;
+
+  // 在 #app 标签下渲染一个按钮组件
+  const app = createApp({
+	template: `#tpl`,
+	setup() {
+	  const ip = ref(window?.getIPAddress?.() ?? '');
+	  const port = ref('8888');
+	  const url = ref('');
+	  const link = ref('');
+
+
+	  const onSubmit = (values) => {
+		const {ip, port} = values
+		console.log('submit', values);
+		link.value = `http://${helper.base64([ip, port].join(':'))}`
+
+        url.value = jrQrcode.getQrBase64(link.value)
+	  };
+
+	  if (ip.value) {
+		onSubmit({ip: ip.value, port: port.value})
+      }
+
+	  return {
+		port,
+		ip,
+        url,
+        link,
+		onSubmit,
+	  };
+	}
+  });
+
+  app.use(vant);
+  app.use(vant.Lazyload);
+  app.mount('#app');
+</script>
+
+</body>
+</html>
